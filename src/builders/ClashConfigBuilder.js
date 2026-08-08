@@ -88,7 +88,7 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
                     enable: true,
                     url: 'https://www.gstatic.com/generate_204',
                     interval: 300,
-                    timeout: 5000,
+                    timeout: 20000,
                     lazy: true
                 }
             };
