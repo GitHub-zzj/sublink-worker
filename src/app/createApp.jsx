@@ -1,6 +1,7 @@
 /** @jsxRuntime automatic */
 /** @jsxImportSource hono/jsx */
 import { Hono } from 'hono';
+import { basicAuth } from 'hono/basic-auth';
 import { Layout } from '../components/Layout.jsx';
 import { Navbar } from '../components/Navbar.jsx';
 import { Form } from '../components/Form.jsx';
@@ -35,6 +36,17 @@ export function createApp(bindings = {}) {
         c.set('lang', lang);
         c.set('t', createTranslator(lang));
         await next();
+    });
+
+    app.use('/', async (c, next) => {
+        const { accessUsername, accessPassword } = runtime.config;
+        if (!accessUsername && !accessPassword) {
+            return next();
+        }
+        if (!accessUsername || !accessPassword) {
+            return c.text('Homepage authentication is not configured correctly', 500);
+        }
+        return await basicAuth({ username: accessUsername, password: accessPassword })(c, next);
     });
 
     app.get('/', (c) => {

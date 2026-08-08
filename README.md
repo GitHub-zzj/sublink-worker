@@ -46,6 +46,10 @@
 - **Docker**: `docker pull ghcr.io/7sageer/sublink-worker:latest`
 - **Docker Compose**: `docker compose up -d` (includes Redis)
 
+### Homepage Authentication
+
+Set both `ACCESS_USERNAME` and `ACCESS_PASSWORD` in the deployment environment to protect only the homepage with HTTP Basic Authentication. Subscription endpoints such as `/clash`, `/singbox`, `/surge`, and generated short links remain publicly accessible.
+
 ## ✨ Features
 
 ### Supported Protocols

@@ -26,6 +26,44 @@ describe('Worker', () => {
         expect(text).toContain('Sublink Worker');
     });
 
+    it('GET / requires credentials when homepage authentication is configured', async () => {
+        const app = createTestApp({
+            config: {
+                accessUsername: 'admin',
+                accessPassword: 'secret'
+            }
+        });
+        const res = await app.request('http://localhost/');
+
+        expect(res.status).toBe(401);
+        expect(res.headers.get('www-authenticate')).toContain('Basic');
+    });
+
+    it('GET / accepts valid homepage credentials', async () => {
+        const app = createTestApp({
+            config: {
+                accessUsername: 'admin',
+                accessPassword: 'secret'
+            }
+        });
+        const credentials = btoa('admin:secret');
+        const res = await app.request('http://localhost/', {
+            headers: { Authorization: `Basic ${credentials}` }
+        });
+
+        expect(res.status).toBe(200);
+        expect(await res.text()).toContain('Sublink Worker');
+    });
+
+    it('GET / fails closed when homepage authentication is incomplete', async () => {
+        const app = createTestApp({
+            config: { accessUsername: 'admin' }
+        });
+        const res = await app.request('http://localhost/');
+
+        expect(res.status).toBe(500);
+    });
+
     it('GET /singbox returns JSON', async () => {
         const app = createTestApp();
         const config = 'vmess://ew0KICAidiI6ICIyIiwNCiAgInBzIjogInRlc3QiLA0KICAiYWRkIjogIjEuMS4xLjEiLA0KICAicG9ydCI6ICI0NDMiLA0KICAiaWQiOiAiYWRkNjY2NjYtODg4OC04ODg4LTg4ODgtODg4ODg4ODg4ODg4IiwNCiAgImFpZCI6ICIwIiwNCiAgInNjeSI6ICJhdXRvIiwNCiAgIm5ldCI6ICJ3cyIsDQogICJ0eXBlIjogIm5vbmUiLA0KICAiaG9zdCI6ICIiLA0KICAicGF0aCI6ICIvIiwNCiAgInRscyI6ICJ0bHMiDQp9';
@@ -75,6 +113,19 @@ describe('Worker', () => {
         expect(res.headers.get('content-type')).toContain('text/yaml');
         const text = await res.text();
         expect(text).toContain('proxies:');
+    });
+
+    it('GET /clash stays public when homepage authentication is configured', async () => {
+        const app = createTestApp({
+            config: {
+                accessUsername: 'admin',
+                accessPassword: 'secret'
+            }
+        });
+        const res = await app.request('http://localhost/clash');
+
+        expect(res.status).toBe(400);
+        expect(await res.text()).toBe('Missing config parameter');
     });
 
     it('GET /clash rejects empty url-test proxy groups with a diagnostic error', async () => {
